@@ -7,8 +7,8 @@ export default function Header() {
       <h1>PDF Manager</h1>
             <nav>
         <Link to="/">Home</Link>
-        <Link to="/about">About</Link>
-        <Link to="/contact">Contact</Link>
+        <Link to="/CreateBlank">creer</Link>
+        <Link to="/DividePdf">diviser</Link>
       </nav> 
     </header>
   );
