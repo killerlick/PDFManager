@@ -9,6 +9,9 @@ export default function Header() {
         <Link to="/">Home</Link>
         <Link to="/CreateBlank">creer</Link>
         <Link to="/DividePdf">diviser</Link>
+        <Link to="/MergePdf">fusionner</Link>
+        <Link to="/CompressZip">compresser zip</Link>
+        <Link to="/CompressPdf">compresser pdf</Link>
       </nav> 
     </header>
   );
