@@ -2,8 +2,6 @@ import { useState } from 'react';
 import DownloadButton from '../components/DownloadButton';
 import styles from './Pages.module.css';
 
-
-
 export default function CompressPdf() {
 
   const [downloadUrl, setDownloadUrl] = useState<string>("");
