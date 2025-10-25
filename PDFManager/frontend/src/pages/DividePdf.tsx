@@ -6,6 +6,9 @@ import styles from './Pages.module.css';
 
 export default function DividePdf() {
 
+    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8080";
+ 
+
   const [file, setFile] = useState<File | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
 
@@ -21,7 +24,7 @@ export default function DividePdf() {
     formData.append("file", file);
     formData.append("pageIndex", pageIndex.toString());
 
-    const res = await fetch("http://localhost:8080/divide", {
+    const res = await fetch(`${apiUrl}divide`, {
       method: "POST",
       body: formData
     });

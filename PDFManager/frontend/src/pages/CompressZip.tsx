@@ -4,6 +4,9 @@ import DownloadButton from '../components/DownloadButton';
 
 export default function CompressZip() {
 
+    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8080";
+
+
     const [downloadUrl, setDownloadUrl] = useState<string>("");
     const [file, setFile] = useState<File | null>(null);
 
@@ -19,7 +22,7 @@ export default function CompressZip() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("http://localhost:8080/compressZip", {
+    const res = await fetch(`${apiUrl}/compressZip` , {
       method: "POST",
       body: formData
     });

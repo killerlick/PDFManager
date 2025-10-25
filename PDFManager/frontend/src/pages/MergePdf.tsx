@@ -8,6 +8,9 @@ import DownloadButton from '../components/DownloadButton';
 
 export default function DividePdf() {
 
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8080";
+
+
 
     const [files, setFiles] = useState<File[]>([]);
     const [isloading, setIsloading] = useState<boolean>(false);
@@ -30,7 +33,7 @@ export default function DividePdf() {
                 formData.append("files", element);
             }
 
-            const res = await fetch("http://localhost:8080/merge", {
+            const res = await fetch(`${apiUrl}/merge`, {
                 method: "POST",
                 body: formData
             });

@@ -3,6 +3,7 @@ import DownloadButton from '../components/DownloadButton';
 import styles from './Pages.module.css';
 
 export default function CompressPdf() {
+  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8080";
 
   const [downloadUrl, setDownloadUrl] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
@@ -19,7 +20,7 @@ export default function CompressPdf() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("http://localhost:8080/compressPdf", {
+    const res = await fetch(`${apiUrl}/compressPdf`, {
       method: "POST",
       body: formData
     });
