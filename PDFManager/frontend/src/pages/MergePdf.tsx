@@ -8,7 +8,7 @@ import DownloadButton from '../components/DownloadButton';
 
 export default function DividePdf() {
 
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8080";
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 
 

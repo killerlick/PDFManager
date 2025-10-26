@@ -19,7 +19,7 @@ import java.util.zip.ZipOutputStream;
 
 public class PDFileManagerMethode {
 
-    static String FOLDER = "output";
+    //static String FOLDER = "output";
 
     public static File createEmptyPdf(String fileName, int nbPage) {
         PDDocument pdDocument = new PDDocument();
@@ -27,7 +27,7 @@ public class PDFileManagerMethode {
             pdDocument.addPage(new PDPage());
         }
         try {
-            File file = new File(FOLDER + "/" + fileName + ".pdf");
+            File file = File.createTempFile("source", ".pdf");
             pdDocument.save(file);
             pdDocument.close();
             return file;
@@ -40,8 +40,6 @@ public class PDFileManagerMethode {
         try {
 
             PDDocument originalFile = Loader.loadPDF(pdDocument);
-            System.out.println("ici2");
-
             int nbPages = originalFile.getNumberOfPages();
 
             if (nbPages <= indexPage) {
@@ -62,8 +60,8 @@ public class PDFileManagerMethode {
             }
 
             File[] files = new File[2];
-            files[0] = new File(FOLDER + "/" + pdDocument.getName() + "_0.pdf");
-            files[1] = new File(FOLDER + "/" + pdDocument.getName() + "_1.pdf");
+            files[0] = File.createTempFile("part1_", ".pdf");
+            files[1] = File.createTempFile("part2_", ".pdf");
 
             premierPdf.save(files[0]);
             premierPdf.close();
@@ -111,7 +109,7 @@ public class PDFileManagerMethode {
                 System.out.println("l'index est superieur ou egal au nombre de page");
                 return null;
             }
-            File pdf = new File(FOLDER + "/" + file.getName() + "_.pdf");
+            File pdf = File.createTempFile("pdfFile", ".pdf");
             pdDocument.removePage(index);
             pdDocument.save(pdf);
             pdDocument.close();

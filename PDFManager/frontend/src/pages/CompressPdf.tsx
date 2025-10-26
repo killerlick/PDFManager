@@ -3,7 +3,8 @@ import DownloadButton from '../components/DownloadButton';
 import styles from './Pages.module.css';
 
 export default function CompressPdf() {
-  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8080";
+
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
   const [downloadUrl, setDownloadUrl] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);

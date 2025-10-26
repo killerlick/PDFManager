@@ -2,7 +2,7 @@ import styles from './Pages.module.css';
 
 async function createPDF() {
 
-  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8080";
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 
   // Logic to create a blank PDF

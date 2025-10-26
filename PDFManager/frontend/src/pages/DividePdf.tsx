@@ -6,7 +6,7 @@ import styles from './Pages.module.css';
 
 export default function DividePdf() {
 
-    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8080";
+    const apiUrl = import.meta.env.APP_API_URL || "http://localhost:8080";
  
 
   const [file, setFile] = useState<File | null>(null);
