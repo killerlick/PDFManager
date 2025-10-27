@@ -9,6 +9,7 @@ import CreateBlank from './pages/CreateBlank'
 import MergePdf from './pages/MergePdf'
 import CompressPdf from './pages/CompressPdf'
 import CompressZip from './pages/CompressZip'
+import Password from './pages/Password'
 
 
 
@@ -26,6 +27,7 @@ function App() {
         <Route path="/MergePdf" element={<MergePdf/>} />
         <Route path="/CompressPdf" element={<CompressPdf/>}></Route>
         <Route path="/CompressZip" element={<CompressZip/>}></Route>
+        <Route path="/Password" element={<Password></Password>}></Route>
       </Routes>
       </main>
 

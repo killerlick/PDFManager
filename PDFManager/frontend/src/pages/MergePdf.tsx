@@ -14,7 +14,7 @@ export default function DividePdf() {
 
     const [files, setFiles] = useState<File[]>([]);
     const [isloading, setIsloading] = useState<boolean>(false);
-    const [downloadUrl, setDownloadUrl] = useState<string|null>(null);
+    const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
     const handleMerge = async (e: any) => {
         e.preventDefault();
@@ -44,7 +44,7 @@ export default function DividePdf() {
 
             const blob = await res.blob();
             const url = window.URL.createObjectURL(blob);
-            setDownloadUrl(url); 
+            setDownloadUrl(url);
 
         } catch (err) {
             console.error("Error during merge:", err);
@@ -57,44 +57,42 @@ export default function DividePdf() {
 
 
 
-    return (<>
-        <div>merge_pdf</div>
-        <form onSubmit={handleMerge} method="post">
+    return (
+        <div className={styles.page}>
+            <h1>FUSIONNER PLUSIEURS PDF ENTRE EUX</h1>
+            <form onSubmit={handleMerge} method="post">
 
-            <input
-                type="file"
-                name="files"
-                id='inputPdf'
-                hidden
-                onChange={(e) => {
-                    if (!e.target.files) return;
-                    setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
-                }
-                }
-                multiple />
-            <button
-                type='button'
-                onClick={() => { document.getElementById('inputPdf')?.click(); }}
+                <input
+                    type="file"
+                    name="files"
+                    id='inputPdf'
+                    hidden
+                    onChange={(e) => {
+                        if (!e.target.files) return;
+                        setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+                    }
+                    }
+                    multiple />
+                <button
+                    type='button'
+                    onClick={() => { document.getElementById('inputPdf')?.click(); }}
 
-            >ajouter des fichiers</button>
-
-
-
+                >ajouter des fichiers</button>
                 <button className={styles.btn} type="submit"
-                disabled={isloading}>
+                    disabled={isloading}>
                     {isloading ? 'Merging...' : 'Merge PDFs'}
-                    </button>
+                </button>
 
-        </form>
-
-
-        <PdfView files={files} setFiles={setFiles} />
-        <DownloadButton downloadUrl={downloadUrl} ></DownloadButton>
+            </form>
 
 
+            <PdfView files={files} setFiles={setFiles} />
+            <DownloadButton downloadUrl={downloadUrl} ></DownloadButton>
 
 
 
-    </>
+
+
+        </div>
     )
 }

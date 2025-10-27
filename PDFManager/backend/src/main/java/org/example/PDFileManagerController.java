@@ -155,5 +155,26 @@ public class PDFileManagerController {
         }
     }
 
+        @PostMapping("/password")
+    public ResponseEntity<FileSystemResource> passwordPDF(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("password") String password){
+
+                try{
+                    File convFile = File.createTempFile("upload_", ".pdf");
+                    file.transferTo(convFile);
+                    File pdFile = PDFileManagerMethode.passwordPdf(convFile, password);
+
+                    FileSystemResource resource = new FileSystemResource(pdFile);
+                    return ResponseEntity.ok()
+                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + pdFile.getName())
+                            .contentType(MediaType.APPLICATION_PDF)
+                            .body(resource);
+                }catch (Exception e){
+                    throw new RuntimeException(e);
+                }
+
+            }
+
 
 }

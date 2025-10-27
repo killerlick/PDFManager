@@ -12,6 +12,7 @@ export default function Header() {
         <Link to="/MergePdf">fusionner</Link>
         <Link to="/CompressZip">compresser zip</Link>
         <Link to="/CompressPdf">compresser pdf</Link>
+        <Link to="/Password">password</Link>
       </nav> 
     </header>
   );

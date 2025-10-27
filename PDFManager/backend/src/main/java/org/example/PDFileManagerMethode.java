@@ -7,6 +7,8 @@ import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
+import org.apache.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -161,6 +163,26 @@ public class PDFileManagerMethode {
             return tempFile;
 
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static File passwordPdf(File file, String password) {
+        try {
+            PDDocument pdDocument = Loader.loadPDF(file);
+            File temFile = File.createTempFile("protected_", ".pdf");
+            AccessPermission ap = new AccessPermission();
+            StandardProtectionPolicy spp = new StandardProtectionPolicy(password, password, ap);
+            spp.setEncryptionKeyLength(128);
+            spp.setPermissions(ap);
+            pdDocument.protect(spp);
+            
+            pdDocument.save(temFile);
+            pdDocument.close();
+
+            return temFile;
+
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

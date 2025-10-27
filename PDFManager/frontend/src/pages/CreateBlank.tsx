@@ -1,30 +1,35 @@
+import { useState } from 'react';
+import DownloadButton from '../components/DownloadButton';
 import styles from './Pages.module.css';
 
-async function createPDF() {
-
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
-
-
-  // Logic to create a blank PDF
-  const res = fetch(`${apiUrl}/create`);
-  const blob = await (await res).blob();
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'blank.pdf';
-  a.click();
-  window.URL.revokeObjectURL(url);
-}
-
 export default function CreateBlank() {
+
+  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+
+  const createPDF = async () => {
+
+    const res = await fetch(`${apiUrl}/create`, {
+      method: 'GET',
+    });
+    const data = await res.blob();
+    const url = URL.createObjectURL(data);
+    setDownloadUrl(url);
+
+
+  }
+
   return (
-    <div>
-      <p>create pdf lol</p>
-      <button 
-      className={styles.btn}
-      onClick={() => createPDF()}>
-        creer
+    <div className={styles.page}>
+      <h1>CREER UN PDF</h1>
+
+      <p>Créer un PDF vide 👇</p>
+      <button className={styles.btn} onClick={createPDF}>
+        Créer
       </button>
+      <DownloadButton downloadUrl={downloadUrl}></DownloadButton>
     </div>
+
   )
 }

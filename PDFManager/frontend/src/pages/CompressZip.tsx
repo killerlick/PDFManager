@@ -9,6 +9,7 @@ export default function CompressZip() {
 
     const [downloadUrl, setDownloadUrl] = useState<string>("");
     const [file, setFile] = useState<File | null>(null);
+    const [isloading, setIsloading] = useState<boolean>(false);
 
   const handleCompressZip = async (e:any) => {
 
@@ -30,12 +31,13 @@ export default function CompressZip() {
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
     setDownloadUrl(url);
+    setIsloading(false);
 
   }
   return (
 
-    <div>
-      <p>compress zip</p>
+    <div className={styles.page}>
+      <h1>CONVERTIR PDF EN ZIP</h1>
       <form onSubmit={handleCompressZip} className={styles.form}>
         <input
           type="file"
@@ -47,7 +49,9 @@ export default function CompressZip() {
             }
           }
           required />
-        <button type="submit" className={styles.btn}>compress</button>
+        <button type="submit" className={styles.btn} disabled={isloading}>
+          {isloading ? "Conversion..." : "Convertir en ZIP"}
+        </button>
 
       </form>
       <DownloadButton downloadUrl={downloadUrl} ></DownloadButton>

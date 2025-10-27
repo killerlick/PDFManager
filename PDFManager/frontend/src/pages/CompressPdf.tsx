@@ -6,12 +6,16 @@ export default function CompressPdf() {
 
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-  const [downloadUrl, setDownloadUrl] = useState<string>("");
+  const [downloadUrl, setDownloadUrl] = useState<string|null>("");
   const [file, setFile] = useState<File | null>(null);
+  const [isloading, setIsloading] = useState<boolean>(false);
 
   const handleCompress = async (e: any) => {
 
     e.preventDefault();
+
+    setIsloading(true);
+    setDownloadUrl(null);
 
     if (!file) {
       alert("Please upload a PDF file.");
@@ -29,13 +33,14 @@ export default function CompressPdf() {
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
     setDownloadUrl(url);
+    setIsloading(false);
 
 
   }
 
   return (
-    <div>
-      <p>create pdf lol</p>
+    <div className={styles.page}>
+      <h1>COMPRESSER TAILLE DE PDF</h1>
 
 
       <form onSubmit={handleCompress} className={styles.form}>
@@ -49,7 +54,9 @@ export default function CompressPdf() {
             }
           }
           required />
-        <button type="submit" className={styles.btn}>compress</button>
+        <button type="submit" className={styles.btn} disabled={isloading}>
+          {isloading ? "Compression..." : "Compresser le PDF"}
+        </button>
 
       </form>
       <DownloadButton downloadUrl={downloadUrl} ></DownloadButton>
