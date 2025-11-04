@@ -21,7 +21,7 @@ import java.util.zip.ZipOutputStream;
 
 public class PDFileManagerMethode {
 
-    //static String FOLDER = "output";
+    // static String FOLDER = "output";
 
     public static File createEmptyPdf(String fileName, int nbPage) {
         PDDocument pdDocument = new PDDocument();
@@ -128,7 +128,7 @@ public class PDFileManagerMethode {
             PDDocument pdDocument = Loader.loadPDF(file);
             pdDocument.setAllSecurityToBeRemoved(true);
             pdDocument.getDocumentCatalog().setPageMode(null);
-            
+
             File compressedFile = File.createTempFile("compressed_", ".pdf");
             pdDocument.save(compressedFile);
             pdDocument.close();
@@ -144,19 +144,19 @@ public class PDFileManagerMethode {
         try {
             File tempFile = File.createTempFile("compressed_", ".pdf");
 
-            try(FileOutputStream fos = new FileOutputStream(tempFile);
-                 ZipOutputStream zipOut = new ZipOutputStream(fos);
-                 FileInputStream fis = new FileInputStream(file)){
+            try (FileOutputStream fos = new FileOutputStream(tempFile);
+                    ZipOutputStream zipOut = new ZipOutputStream(fos);
+                    FileInputStream fis = new FileInputStream(file)) {
 
-                    ZipEntry zipEntry = new ZipEntry(file.getName());
-                    zipOut.putNextEntry(zipEntry);
+                ZipEntry zipEntry = new ZipEntry(file.getName());
+                zipOut.putNextEntry(zipEntry);
 
-                    byte[] bytes = new byte[1024];
-                    int length;
-                    while((length = fis.read(bytes)) >= 0) {
-                        zipOut.write(bytes, 0, length);
-                    }
-                    zipOut.closeEntry();
+                byte[] bytes = new byte[1024];
+                int length;
+                while ((length = fis.read(bytes)) >= 0) {
+                    zipOut.write(bytes, 0, length);
+                }
+                zipOut.closeEntry();
 
             }
 
@@ -167,16 +167,33 @@ public class PDFileManagerMethode {
         }
     }
 
-    public static File passwordPdf(File file, String password) {
+    public static File securityPdf(File file, String password, boolean canPrint, boolean canModify, boolean canCopy) {
         try {
             PDDocument pdDocument = Loader.loadPDF(file);
             File temFile = File.createTempFile("protected_", ".pdf");
             AccessPermission ap = new AccessPermission();
             StandardProtectionPolicy spp = new StandardProtectionPolicy(password, password, ap);
             spp.setEncryptionKeyLength(128);
+
+            if (!canPrint) {
+                ap.setCanPrint(false);
+
+            }
+            if (!canModify) {
+                ap.setCanModify(false);
+                ap.setCanModifyAnnotations(false);
+                ap.setCanFillInForm(false);
+                ap.setCanAssembleDocument(false);
+            }
+            if (!canCopy) {
+                ap.setCanExtractContent(false);
+                ap.setCanExtractForAccessibility(false);
+            }
+
             spp.setPermissions(ap);
+
             pdDocument.protect(spp);
-            
+
             pdDocument.save(temFile);
             pdDocument.close();
 

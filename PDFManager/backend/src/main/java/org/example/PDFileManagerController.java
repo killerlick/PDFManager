@@ -45,10 +45,9 @@ public class PDFileManagerController {
             @RequestParam("pageIndex") int pageIndex) {
         try {
             // Convert MultipartFile to File
-            File convFile = File.createTempFile("upload_",".pdf");
+            File convFile = File.createTempFile("upload_", ".pdf");
             file.transferTo(convFile);
-            pageIndex = pageIndex-1;
-
+            pageIndex = pageIndex - 1;
 
             File[] pdFiles = PDFileManagerMethode.scinderPdf(convFile, pageIndex);
             if (pdFiles == null) {
@@ -60,7 +59,7 @@ public class PDFileManagerController {
             // Create a ZIP file containing the divided PDFs
             File zipfile = File.createTempFile("files_", ".zip");
             try (FileOutputStream fos = new FileOutputStream(zipfile);
-                 ZipOutputStream zos = new ZipOutputStream(fos)){
+                    ZipOutputStream zos = new ZipOutputStream(fos)) {
 
                 // Add each PDF file to the ZIP
                 for (File pdf : pdFiles) {
@@ -90,26 +89,25 @@ public class PDFileManagerController {
 
     @PostMapping("/merge")
     public ResponseEntity<FileSystemResource> mergePDF(
-            @RequestParam("files") MultipartFile files[]
-    ){
+            @RequestParam("files") MultipartFile files[]) {
         if (files.length < 2) {
             return ResponseEntity.badRequest()
                     .body(null);
-            
+
         }
 
         File[] convFiles = new File[files.length];
-       for (int i = 0; i < files.length; i++) {
-        try {
-            File convFile = File.createTempFile("upload_", ".pdf");
-            files[i].transferTo(convFile);
-            convFiles[i] = convFile; // ajouter au tableau
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        for (int i = 0; i < files.length; i++) {
+            try {
+                File convFile = File.createTempFile("upload_", ".pdf");
+                files[i].transferTo(convFile);
+                convFiles[i] = convFile; // ajouter au tableau
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
-    }
         File pdFile = PDFileManagerMethode.mergePdf(convFiles);
-        
+
         FileSystemResource resource = new FileSystemResource(pdFile);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + pdFile.getName())
@@ -119,8 +117,7 @@ public class PDFileManagerController {
 
     @PostMapping("/compressZip")
     public ResponseEntity<FileSystemResource> compressZip(
-            @RequestParam("file") MultipartFile file
-    ){
+            @RequestParam("file") MultipartFile file) {
         try {
             File convFile = File.createTempFile("upload_", ".pdf");
             file.transferTo(convFile);
@@ -136,10 +133,9 @@ public class PDFileManagerController {
         }
     }
 
-        @PostMapping("/compressPdf")
+    @PostMapping("/compressPdf")
     public ResponseEntity<FileSystemResource> compressPDF(
-            @RequestParam("file") MultipartFile file
-    ){
+            @RequestParam("file") MultipartFile file) {
         try {
             File convFile = File.createTempFile("upload_", ".pdf");
             file.transferTo(convFile);
@@ -155,26 +151,28 @@ public class PDFileManagerController {
         }
     }
 
-        @PostMapping("/password")
+    @PostMapping("/security")
     public ResponseEntity<FileSystemResource> passwordPDF(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("password") String password){
+            @RequestParam(value = "password" , defaultValue = "") String password,
+            @RequestParam(value = "canPrint", defaultValue = "true") boolean canPrint,
+            @RequestParam(value = "canModify", defaultValue = "true") boolean canModify,
+            @RequestParam(value = "canCopy", defaultValue = "true") boolean canCopy) {
 
-                try{
-                    File convFile = File.createTempFile("upload_", ".pdf");
-                    file.transferTo(convFile);
-                    File pdFile = PDFileManagerMethode.passwordPdf(convFile, password);
+        try {
+            File convFile = File.createTempFile("upload_", ".pdf");
+            file.transferTo(convFile);
+            File pdFile = PDFileManagerMethode.securityPdf(convFile, password, canPrint, canModify, canCopy);
 
-                    FileSystemResource resource = new FileSystemResource(pdFile);
-                    return ResponseEntity.ok()
-                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + pdFile.getName())
-                            .contentType(MediaType.APPLICATION_PDF)
-                            .body(resource);
-                }catch (Exception e){
-                    throw new RuntimeException(e);
-                }
+            FileSystemResource resource = new FileSystemResource(pdFile);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + pdFile.getName())
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(resource);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
-            }
-
+    }
 
 }

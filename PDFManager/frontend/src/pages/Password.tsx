@@ -8,8 +8,14 @@ export default function PasswordPdf() {
 
     const [file , setFile] = useState<File|null>(null);
     const [password, setPassword] = useState<string>("");
+    const [canPrint , setCanPrint] = useState<boolean>(true);
+    const [canModify , setCanModify] = useState<boolean>(true);
+    const [canCopy , setCanCopy] = useState<boolean>(true);
+
+
     const [isloading, setIsloading] = useState<boolean>(false);
     const [downloadUrl, setDownloadUrl] = useState<string|null>(null);
+
 
     const handlePasswordProtect = async (e: any) => {
         e.preventDefault();
@@ -27,8 +33,11 @@ export default function PasswordPdf() {
 
             formData.append("password", password);
             formData.append("file", file);
+            formData.append("canPrint", String(canPrint));
+            formData.append("canModify", String(canModify));
+            formData.append("canCopy", String(canCopy));
 
-            const res = await fetch(`${apiUrl}/password`, {
+            const res = await fetch(`${apiUrl}/security`, {
                 method: "POST",
                 body: formData
             });
@@ -70,7 +79,6 @@ export default function PasswordPdf() {
                     }
                     ></input>
                     <input 
-                    required
                     type="password"
                     name="password" 
                     placeholder="Enter Password"
@@ -79,11 +87,42 @@ export default function PasswordPdf() {
                             setPassword(e.target.value);
                         }
                     }></input>
+
+                    <label>bloquer l'impression du pdf<input 
+                    type="checkbox"
+                    name="canPrint"
+                    onChange={
+                        (e) => {
+                            setCanPrint(!e.target.checked);
+                        }
+                    }
+                    ></input></label>
+
+                    <label>bloquer la modification du pdf <input 
+                    type="checkbox"
+                    name="canModify"
+                    onChange={
+                        (e) => {
+                            setCanModify(!e.target.checked);
+                        }
+                    }
+                    ></input></label>
+                    <label>bloquer la copie du pdf<input 
+                    type="checkbox"
+                    name="canCopy"
+                    onChange={
+                        (e) => {
+                            setCanCopy(!e.target.checked);
+                        }
+                    }
+                    ></input></label>
+
                     <button className={styles.btn} type="submit"
                     disabled={isloading}>
                         {isloading ? "Generation..." : "securiser le pdf"}
                         </button>
             </form>
+            
             <DownloadButton downloadUrl={downloadUrl}></DownloadButton>
         </div> );
 }
