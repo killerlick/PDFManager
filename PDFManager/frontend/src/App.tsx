@@ -1,5 +1,4 @@
-import {Routes , Route} from 'react-router-dom'
-import { Analytics } from "@vercel/analytics/react"
+import { Routes, Route } from 'react-router-dom'
 
 import Header from './components/Header'
 import './App.css'
@@ -18,26 +17,26 @@ function App() {
 
   return (
     <>
-    <Header/>
-    <Analytics/>
+      <Header />
 
       <main>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/CreateBlank" element={< CreateBlank/>} />
-        <Route path="/DividePdf" element={<DividePdf />} />
-        <Route path="/MergePdf" element={<MergePdf/>} />
-        <Route path="/CompressPdf" element={<CompressPdf/>}></Route>
-        <Route path="/CompressZip" element={<CompressZip/>}></Route>
-        <Route path="/Password" element={<Password></Password>}></Route>
-      </Routes>
+
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/CreateBlank" element={< CreateBlank />} />
+          <Route path="/DividePdf" element={<DividePdf />} />
+          <Route path="/MergePdf" element={<MergePdf />} />
+          <Route path="/CompressPdf" element={<CompressPdf />}></Route>
+          <Route path="/CompressZip" element={<CompressZip />}></Route>
+          <Route path="/Password" element={<Password></Password>}></Route>
+        </Routes>
       </main>
 
-    <Footer/>
+      <Footer />
 
-      
 
-    
+
+
     </>
   )
 }
