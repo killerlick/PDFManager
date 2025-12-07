@@ -1,4 +1,5 @@
 import {Routes , Route} from 'react-router-dom'
+import { Analytics } from "@vercel/analytics/react"
 
 import Header from './components/Header'
 import './App.css'
@@ -18,6 +19,7 @@ function App() {
   return (
     <>
     <Header/>
+    <Analytics/>
 
       <main>
       <Routes>
