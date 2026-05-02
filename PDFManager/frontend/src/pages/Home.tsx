@@ -9,8 +9,8 @@ export default function create_blank() {
     { link: "/CreateBlank", titre: "Créer un PDF" },
     { link: "/DividePdf", titre: "scinder un PDF" },
     { link: "/MergePdf", titre: "Fusionner des PDFs" },
-    { link: "/CompressZip", titre: "Compresser un PDF" },
-    { link: "/CompressPdf", titre: "compresser un PDF en Zip" },
+    { link: "/CompressZip", titre: "Compresser un PDF en Zip" },
+    { link: "/CompressPdf", titre: "compresser un PDF" },
     { link: "/Password", titre: "ajouter un mot de passe" }
   ]
 
@@ -23,7 +23,7 @@ export default function create_blank() {
         
       {
         card.map((card,index)=>(
-          <CardPdf key={index} link={card.link} titre={card.titre} />
+          <CardPdf key={card.link} link={card.link} titre={card.titre} />
         ))
       }
 

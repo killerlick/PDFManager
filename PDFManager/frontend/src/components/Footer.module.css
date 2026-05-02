@@ -1,12 +1,43 @@
-footer {
+.footer {
   background: rgba(30, 30, 46, 0.9);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem 2rem;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  padding: 1rem 2rem;
   backdrop-filter: blur(10px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.brand {
+  font-weight: 700;
+  color: #e4e4e7;
+}
+
+.links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.links a {
+  color: #6c7086;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.links a:hover {
+  color: #e4e4e7;
+}
+
+.copy {
+  font-size: 0.8rem;
+  color: #6c7086;
+}
+
+@media (max-width: 600px) {
+  .footer {
+    flex-direction: column;
+    gap: 0.8rem;
+    text-align: center;
+  }
 }

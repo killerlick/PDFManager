@@ -4,36 +4,56 @@ import styles from './Pages.module.css';
 
 export default function CompressPdf() {
 
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-  const [downloadUrl, setDownloadUrl] = useState<string|null>("");
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+
   const [isloading, setIsloading] = useState<boolean>(false);
 
   const handleCompress = async (e: any) => {
 
     e.preventDefault();
 
-    setIsloading(true);
-    setDownloadUrl(null);
-
     if (!file) {
       alert("Please upload a PDF file.");
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
+    if (file.type !== "application/pdf") {
+      alert("Please upload a valid PDF file.");
+      return;
+    }
 
-    const res = await fetch(`${apiUrl}/compressPdf`, {
-      method: "POST",
-      body: formData
-    });
 
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    setDownloadUrl(url);
-    setIsloading(false);
+    setIsloading(true);
+    setDownloadUrl(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(`${apiUrl}/compressPdf`, {
+        method: "POST",
+        body: formData
+      });
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      setDownloadUrl(url);
+
+    } catch (err) {
+      alert("An error occurred while compressing the PDF." + err);
+      setIsloading(false);
+      return;
+    } finally {
+      setIsloading(false);
+    }
+
+
+
+
+
 
 
   }
@@ -47,6 +67,7 @@ export default function CompressPdf() {
         <input
           type="file"
           name="file"
+          accept='application/pdf'
           onChange={
             (e) => {
               if (!e.target.files) return;
@@ -59,7 +80,7 @@ export default function CompressPdf() {
         </button>
 
       </form>
-      <DownloadButton downloadUrl={downloadUrl} ></DownloadButton>
+      <DownloadButton downloadUrl={downloadUrl} fileName="compressed.pdf"></DownloadButton>
     </div>
   )
 }

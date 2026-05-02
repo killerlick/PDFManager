@@ -1,9 +1,9 @@
-header {
+.header {
   background: rgba(30, 30, 46, 0.9);
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  padding: 0.8rem 2rem;
+  padding: 1.2rem 2rem;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -11,25 +11,91 @@ header {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
-.header h1 {
+.brand {
   color: #e4e4e7;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  justify-self: start;
 }
 
-nav {
+.brand:hover {
+  color: #00c6ff;
+}
+
+.nav {
   display: flex;
-  gap: 1.2rem;
+  align-items: center;
+  gap: 1.8rem;
+  justify-self: end;
 }
 
-nav a {
+.nav > a {
   color: #bcbcd2;
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.2s ease, transform 0.15s ease;
+  font-size: 1rem;
+  transition: color 0.2s ease;
 }
 
-nav a:hover {
+.nav > a:hover {
   color: #00c6ff;
-  transform: translateY(-1px);
+}
+
+/* Dropdown */
+.dropdown {
+  position: relative;
+}
+
+.dropbtn {
+  color: #bcbcd2;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.dropbtn:hover {
+  color: #00c6ff;
+}
+
+.dropMenu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: #1e1e2e;
+  border: 1px solid #313244;
+  border-radius: 10px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 20;
+}
+
+.dropMenu a {
+  color: #bcbcd2;
+  text-decoration: none;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dropMenu a:hover {
+  background: #313244;
+  color: #e4e4e7;
+}
+
+@media (max-width: 768px) {
+  .header {
+    grid-template-columns: 1fr auto;
+  }
+
+  .nav {
+    display: none;
+  }
 }

@@ -6,15 +6,13 @@ export default function PasswordPdf() {
 
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-    const [file , setFile] = useState<File|null>(null);
+    const [file, setFile] = useState<File | null>(null);
     const [password, setPassword] = useState<string>("");
-    const [canPrint , setCanPrint] = useState<boolean>(true);
-    const [canModify , setCanModify] = useState<boolean>(true);
-    const [canCopy , setCanCopy] = useState<boolean>(true);
-
-
+    const [canPrint, setCanPrint] = useState<boolean>(true);
+    const [canModify, setCanModify] = useState<boolean>(true);
+    const [canCopy, setCanCopy] = useState<boolean>(true);
     const [isloading, setIsloading] = useState<boolean>(false);
-    const [downloadUrl, setDownloadUrl] = useState<string|null>(null);
+    const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
 
     const handlePasswordProtect = async (e: any) => {
@@ -25,10 +23,21 @@ export default function PasswordPdf() {
             return;
         }
 
+        if (file.type !== "application/pdf") {
+            alert("Please select a PDF file.");
+            return;
+        }
+
+        if (password.trim() === "") {
+            alert("Please enter a password.");
+            return;
+        }
+
+        setIsloading(true);
+        setDownloadUrl(null);
+
         try {
-            setIsloading(true);
-            setDownloadUrl(null);
-            
+
             const formData = new FormData();
 
             formData.append("password", password);
@@ -51,15 +60,15 @@ export default function PasswordPdf() {
             setDownloadUrl(url);
 
 
-    }catch (err) {
+        } catch (err) {
             console.error("Error during password protection:", err);
             alert("An error occurred while protecting the files.");
         }
-        finally{
+        finally {
             setIsloading(false);
 
         }
-}
+    }
 
 
     return (
@@ -67,20 +76,21 @@ export default function PasswordPdf() {
             <h1>AJOUTER UN MOT DE PASSE A VOTRE FICHIER</h1>
             <form onSubmit={handlePasswordProtect} method="post">
                 <input
-                required
+                    required
                     type="file"
                     name="file"
+                    accept="application/pdf"
                     onChange={
-                        (e) =>{
-                            if(!e.target.files) return;
+                        (e) => {
+                            if (!e.target.files) return;
                             setFile(e.target.files[0]);
                         }
-                        
+
                     }
-                    ></input>
-                    <input 
+                ></input>
+                <input
                     type="password"
-                    name="password" 
+                    name="password"
                     placeholder="Enter Password"
                     onChange={
                         (e) => {
@@ -88,7 +98,7 @@ export default function PasswordPdf() {
                         }
                     }></input>
 
-                    <label>bloquer l'impression du pdf<input 
+                <label>bloquer l'impression du pdf<input
                     type="checkbox"
                     name="canPrint"
                     onChange={
@@ -96,9 +106,9 @@ export default function PasswordPdf() {
                             setCanPrint(!e.target.checked);
                         }
                     }
-                    ></input></label>
+                ></input></label>
 
-                    <label>bloquer la modification du pdf <input 
+                <label>bloquer la modification du pdf <input
                     type="checkbox"
                     name="canModify"
                     onChange={
@@ -106,8 +116,8 @@ export default function PasswordPdf() {
                             setCanModify(!e.target.checked);
                         }
                     }
-                    ></input></label>
-                    <label>bloquer la copie du pdf<input 
+                ></input></label>
+                <label>bloquer la copie du pdf<input
                     type="checkbox"
                     name="canCopy"
                     onChange={
@@ -115,14 +125,14 @@ export default function PasswordPdf() {
                             setCanCopy(!e.target.checked);
                         }
                     }
-                    ></input></label>
+                ></input></label>
 
-                    <button className={styles.btn} type="submit"
+                <button className={styles.btn} type="submit"
                     disabled={isloading}>
-                        {isloading ? "Generation..." : "securiser le pdf"}
-                        </button>
+                    {isloading ? "Generation..." : "securiser le pdf"}
+                </button>
             </form>
-            
-            <DownloadButton downloadUrl={downloadUrl}></DownloadButton>
-        </div> );
+
+            <DownloadButton downloadUrl={downloadUrl} fileName="secured.pdf"></DownloadButton>
+        </div>);
 }

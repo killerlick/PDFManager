@@ -6,7 +6,7 @@ import DownloadButton from '../components/DownloadButton';
 
 
 
-export default function DividePdf() {
+export default function MergePdf() {
 
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -19,8 +19,8 @@ export default function DividePdf() {
     const handleMerge = async (e: any) => {
         e.preventDefault();
 
-        if (files.length === 0) {
-            alert("Please select files to merge.");
+        if (files.length < 2) {
+            alert("Please select at least two files to merge.");
             return;
         }
 
@@ -66,6 +66,7 @@ export default function DividePdf() {
                     type="file"
                     name="files"
                     id='inputPdf'
+                    accept='application/pdf,.pdf'
                     hidden
                     onChange={(e) => {
                         if (!e.target.files) return;
@@ -87,7 +88,7 @@ export default function DividePdf() {
 
 
             <PdfView files={files} setFiles={setFiles} />
-            <DownloadButton downloadUrl={downloadUrl} ></DownloadButton>
+            <DownloadButton downloadUrl={downloadUrl} fileName="merged.pdf"></DownloadButton>
 
 
 

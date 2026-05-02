@@ -9,10 +9,10 @@ export default function CardPdf({
     titre :string;
 }) {
   return (
-    <Link to={link} >
-        <div className={styles.card}>
+    <Link to={link} className={styles.card} >
+        
                   <h2>{titre}</h2>
-        </div>
+        
 
     </Link>
   );

@@ -2,10 +2,12 @@ import styles from './DownloadBtn.module.css';
 
 
 export default function DownloadButton({
-    downloadUrl
+    downloadUrl,
+    fileName ="downloaded_file"
 
 }: {
     downloadUrl: string | null;
+    fileName?: string;
 }) {
 
 
@@ -30,7 +32,7 @@ export default function DownloadButton({
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `PDFile.${ext}`;
+        a.download = `${fileName}.${ext}`;
         a.click();
         URL.revokeObjectURL(url);
     }

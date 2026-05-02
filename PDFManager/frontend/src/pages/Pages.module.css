@@ -1,4 +1,6 @@
 .page {
+  min-width: 0;
+  width: 100%;
   flex-direction: column;
   background-color: #181825;
   color: #e4e4e7;
@@ -9,6 +11,23 @@
   align-items: center;
   font-family: 'Inter', sans-serif;
   text-align: center;
+}
+
+/* Inputs dans le thème */
+input[type="file"],
+input[type="text"] {
+  background-color: #1e1e2e;
+  border: 1px solid #313244;
+  color: #e4e4e7;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: #4f46e5;
 }
 
 
@@ -39,6 +58,10 @@ form {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;;
+}
+
+.btn:active {
+  transform: scale(0.97);
 }
 
 .btn:hover {

@@ -4,26 +4,36 @@ import DownloadButton from '../components/DownloadButton';
 
 export default function CompressZip() {
 
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 
-    const [downloadUrl, setDownloadUrl] = useState<string>("");
-    const [file, setFile] = useState<File | null>(null);
-    const [isloading, setIsloading] = useState<boolean>(false);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [isloading, setIsloading] = useState<boolean>(false);
 
-  const handleCompressZip = async (e:any) => {
+  const handleCompressZip = async (e: any) => {
 
     e.preventDefault();
 
     if (!file) {
-      alert("Please upload a ZIP file.");
+      alert("Please upload a pdf file.");
       return;
     }
 
+    if (file.type !== "application/pdf") {
+      alert("Please upload a valid pdf file.");
+      return;
+    }
+
+    setIsloading(true);
+    setDownloadUrl(null);
+
+    try{
+      
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch(`${apiUrl}/compressZip` , {
+    const res = await fetch(`${apiUrl}/compressZip`, {
       method: "POST",
       body: formData
     });
@@ -32,6 +42,15 @@ export default function CompressZip() {
     const url = window.URL.createObjectURL(blob);
     setDownloadUrl(url);
     setIsloading(false);
+
+    }catch(err){
+      alert("An error occurred while converting the file. Please try again."+err);
+      setIsloading(false);
+      return;
+    }finally{
+      setIsloading(false);
+    }
+
 
   }
   return (
@@ -42,6 +61,7 @@ export default function CompressZip() {
         <input
           type="file"
           name="file"
+          accept='application/pdf'
           onChange={
             (e) => {
               if (!e.target.files) return;
@@ -54,7 +74,7 @@ export default function CompressZip() {
         </button>
 
       </form>
-      <DownloadButton downloadUrl={downloadUrl} ></DownloadButton>
+      <DownloadButton downloadUrl={downloadUrl} fileName="compressed.zip"></DownloadButton>
     </div>
   );
 }

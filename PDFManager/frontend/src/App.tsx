@@ -26,9 +26,9 @@ function App() {
           <Route path="/CreateBlank" element={< CreateBlank />} />
           <Route path="/DividePdf" element={<DividePdf />} />
           <Route path="/MergePdf" element={<MergePdf />} />
-          <Route path="/CompressPdf" element={<CompressPdf />}></Route>
-          <Route path="/CompressZip" element={<CompressZip />}></Route>
-          <Route path="/Password" element={<Password></Password>}></Route>
+          <Route path="/CompressPdf" element={<CompressPdf />}/>
+          <Route path="/CompressZip" element={<CompressZip />}/>
+          <Route path="/Password" element={<Password></Password>}/>
         </Routes>
       </main>
 
