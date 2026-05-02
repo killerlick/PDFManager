@@ -22,7 +22,7 @@ export default function create_blank() {
       <div className={styles.container}>
         
       {
-        card.map((card,index)=>(
+        card.map((card)=>(
           <CardPdf key={card.link} link={card.link} titre={card.titre} />
         ))
       }
