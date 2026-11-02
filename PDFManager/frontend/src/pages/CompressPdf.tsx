@@ -38,6 +38,10 @@ export default function CompressPdf() {
         body: formData
       });
 
+      if (!res.ok) {
+        throw new Error(await res.text() || `HTTP ${res.status}`);
+      }
+
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       setDownloadUrl(url);

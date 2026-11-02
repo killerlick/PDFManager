@@ -18,23 +18,23 @@ export default function DownloadButton({
             return;
         }
 
-        const res = await fetch(downloadUrl);
-        const blob = await res.blob();
+        let name = fileName;
 
-        let ext = 'file';
-
-        if(blob.type === 'application/pdf'){
-            ext = 'pdf';
-        }else{
-            ext = 'zip'
+        // on devine l'extension seulement si la page n'en a pas donné ("merged.pdf" en a une, "downloaded_file" non)
+        const hasExtension = name.includes('.');
+        if (!hasExtension) {
+            const blob = await (await fetch(downloadUrl)).blob();
+            if (blob.type === 'application/pdf') {
+                name += '.pdf';
+            } else {
+                name += '.zip';
+            }
         }
 
-        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = `${fileName}.${ext}`;
+        a.href = downloadUrl;
+        a.download = name;
         a.click();
-        URL.revokeObjectURL(url);
     }
 
     return (<>

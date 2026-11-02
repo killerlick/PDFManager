@@ -9,9 +9,8 @@ export default function DividePdf() {
 
   const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-  console.log("API URL:", apiUrl);
   const [file, setFile] = useState<File | null>(null);
-  const [pageIndex, setPageIndex] = useState(0);
+  const [pageIndex, setPageIndex] = useState(1);
   const [isloading, setIsloading] = useState<boolean>(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
@@ -27,8 +26,13 @@ export default function DividePdf() {
       alert("Le fichier doit être un PDF.");
       return;
     }
+    if (!Number.isInteger(pageIndex) || pageIndex < 1) {
+      alert("L'index de page doit être un entier supérieur ou égal à 1.");
+      return;
+    }
 
     setIsloading(true);
+    setDownloadUrl(null);
 
     try {
       const formData = new FormData();
@@ -39,6 +43,10 @@ export default function DividePdf() {
         method: "POST",
         body: formData
       });
+
+      if (!res.ok) {
+        throw new Error(await res.text() || `HTTP ${res.status}`);
+      }
 
       const blob = await res.blob();
 
@@ -60,6 +68,10 @@ export default function DividePdf() {
   }
 
 
+  let pageIndexValue: number | string = pageIndex;
+  if (Number.isNaN(pageIndex)) {
+    pageIndexValue = "";
+  }
 
   return (
     <div className={styles.page}>
@@ -82,12 +94,10 @@ export default function DividePdf() {
           type="number"
           name="pageIndex"
           min={1}
+          step={1}
           placeholder='Page Index'
-          onChange={(e) => {
-            if (!e.target.value) return;
-            setPageIndex(parseInt(e.target.value));
-          }
-          }
+          value={pageIndexValue}
+          onChange={(e) => setPageIndex(parseInt(e.target.value, 10))}
           required />
 
         <button className={styles.btn} type="submit"

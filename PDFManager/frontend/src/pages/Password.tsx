@@ -89,6 +89,7 @@ export default function PasswordPdf() {
                     }
                 ></input>
                 <input
+                    required
                     type="password"
                     name="password"
                     placeholder="Enter Password"

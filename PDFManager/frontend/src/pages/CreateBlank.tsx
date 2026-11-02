@@ -10,12 +10,19 @@ export default function CreateBlank() {
 
   const createPDF = async () => {
 
-    const res = await fetch(`${apiUrl}/create`, {
-      method: 'GET',
-    });
-    const data = await res.blob();
-    const url = URL.createObjectURL(data);
-    setDownloadUrl(url);
+    try {
+      const res = await fetch(`${apiUrl}/create`, {
+        method: 'GET',
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      const data = await res.blob();
+      const url = URL.createObjectURL(data);
+      setDownloadUrl(url);
+    } catch (err) {
+      alert("Une erreur est survenue lors de la création du PDF. " + err);
+    }
 
 
   }
@@ -28,7 +35,7 @@ export default function CreateBlank() {
       <button className={styles.btn} onClick={createPDF}>
         Créer
       </button>
-      <DownloadButton downloadUrl={downloadUrl}></DownloadButton>
+      <DownloadButton downloadUrl={downloadUrl} fileName="blank.pdf"></DownloadButton>
     </div>
 
   )

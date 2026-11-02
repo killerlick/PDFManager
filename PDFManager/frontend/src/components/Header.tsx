@@ -6,12 +6,12 @@ export default function Header() {
   const [open, setOpen] = useState(false)
 
   const outils = [
-    { link: "/create-blank", titre: "Créer un PDF" },
-    { link: "/divide-pdf",   titre: "Scinder un PDF" },
-    { link: "/merge-pdf",    titre: "Fusionner des PDFs" },
-    { link: "/compress-pdf", titre: "Compresser un PDF" },
-    { link: "/compress-zip", titre: "Compresser en Zip" },
-    { link: "/password",     titre: "Mot de passe" },
+    { link: "/CreateBlank", titre: "Créer un PDF" },
+    { link: "/DividePdf",   titre: "Scinder un PDF" },
+    { link: "/MergePdf",    titre: "Fusionner des PDFs" },
+    { link: "/CompressPdf", titre: "Compresser un PDF" },
+    { link: "/CompressZip", titre: "Compresser en Zip" },
+    { link: "/Password",    titre: "Mot de passe" },
   ]
 
   return (

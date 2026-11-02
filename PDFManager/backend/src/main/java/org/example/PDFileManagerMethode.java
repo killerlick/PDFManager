@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -39,18 +41,17 @@ public class PDFileManagerMethode {
     }
 
     public static File[] scinderPdf(File pdDocument, int indexPage) {
-        try {
+        try (
+                PDDocument originalFile = Loader.loadPDF(pdDocument);
+                PDDocument premierPdf = new PDDocument();
+                PDDocument secondPdf = new PDDocument()) {
 
-            PDDocument originalFile = Loader.loadPDF(pdDocument);
             int nbPages = originalFile.getNumberOfPages();
 
-            if (nbPages <= indexPage) {
-                System.out.println("le nombre de page " + nbPages + " est inferieur ou egal a l'index" + indexPage);
+            // chaque partie doit avoir au moins une page, sinon on renvoie null
+            if (indexPage < 0 || indexPage >= nbPages - 1) {
                 return null;
             }
-
-            PDDocument premierPdf = new PDDocument();
-            PDDocument secondPdf = new PDDocument();
 
             for (int i = 0; i < nbPages; i++) {
                 PDPage page = originalFile.getPage(i);
@@ -66,16 +67,12 @@ public class PDFileManagerMethode {
             files[1] = File.createTempFile("part2_", ".pdf");
 
             premierPdf.save(files[0]);
-            premierPdf.close();
             secondPdf.save(files[1]);
-            secondPdf.close();
             return files;
 
         } catch (IOException e) {
-            System.out.println(e);
+            throw new RuntimeException(e);
         }
-
-        return null;
 
     }
 
@@ -168,12 +165,9 @@ public class PDFileManagerMethode {
     }
 
     public static File securityPdf(File file, String password, boolean canPrint, boolean canModify, boolean canCopy) {
-        try {
-            PDDocument pdDocument = Loader.loadPDF(file);
+        try (PDDocument pdDocument = Loader.loadPDF(file)) {
             File temFile = File.createTempFile("protected_", ".pdf");
             AccessPermission ap = new AccessPermission();
-            StandardProtectionPolicy spp = new StandardProtectionPolicy(password, password, ap);
-            spp.setEncryptionKeyLength(128);
 
             if (!canPrint) {
                 ap.setCanPrint(false);
@@ -190,12 +184,12 @@ public class PDFileManagerMethode {
                 ap.setCanExtractForAccessibility(false);
             }
 
-            spp.setPermissions(ap);
+
+            StandardProtectionPolicy spp = new StandardProtectionPolicy(password, password, ap);
+            spp.setEncryptionKeyLength(256);
 
             pdDocument.protect(spp);
-
             pdDocument.save(temFile);
-            pdDocument.close();
 
             return temFile;
 

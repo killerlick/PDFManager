@@ -1,178 +1,234 @@
 package org.example;
 
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.example.PDFileManagerMethode;
-
+/*
+ * Comment on gère les fichiers temporaires :
+ * - les fichiers d'entrée (uploads, fichiers intermédiaires) sont supprimés dans le finally de chaque méthode ;
+ * - le fichier résultat, c'est streamFile() qui l'envoie, puis qui le supprime une fois l'envoi fini.
+ *   Du coup, juste après l'appel à streamFile(), on met la variable du résultat à null (ou on la retire
+ *   de la liste) : à partir de là, c'est le flux qui s'en occupe, pas le finally.
+ *   Si ça plante avant, le finally supprime aussi le résultat, donc rien ne traîne sur le disque.
+ */
 @RestController
 public class PDFileManagerController {
 
     // Endpoint to create a PDF with 3 empty pages
     @GetMapping("/create")
-    public ResponseEntity<FileSystemResource> createPDF() {
+    public ResponseEntity<StreamingResponseBody> createPDF() {
         File pdFile = PDFileManagerMethode.createEmptyPdf("source", 3);
-
-        FileSystemResource resource = new FileSystemResource(pdFile);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + pdFile.getName())
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(resource);
+        return streamFile(pdFile, "blank.pdf", MediaType.APPLICATION_PDF);
     }
 
     /**
      * Endpoint to divide a PDF at a specified page index
-     * 
+     *
      * @param file      the PDF file to be divided
-     * @param pageIndex the index of the page to divide at
+     * @param pageIndex the number of pages in the first part (1 <= pageIndex < nbPages)
      * @return a ResponseEntity containing a ZIP file with the divided PDFs
      */
     @PostMapping("/divide")
-    public ResponseEntity<byte[]> dividePDF(
+    public ResponseEntity<StreamingResponseBody> dividePDF(
             @RequestParam("file") MultipartFile file,
             @RequestParam("pageIndex") int pageIndex) {
+        if (pageIndex < 1) {
+            return badRequest("L'index de page doit être supérieur ou égal à 1.");
+        }
+
+        List<File> tempFiles = new ArrayList<>();
         try {
             // Convert MultipartFile to File
             File convFile = File.createTempFile("upload_", ".pdf");
+            tempFiles.add(convFile);
             file.transferTo(convFile);
-            pageIndex = pageIndex - 1;
 
-            File[] pdFiles = PDFileManagerMethode.scinderPdf(convFile, pageIndex);
+            File[] pdFiles = PDFileManagerMethode.scinderPdf(convFile, pageIndex - 1);
             if (pdFiles == null) {
-                return ResponseEntity.badRequest()
-                        .body(("PageIndex trop grand. Le PDF contient moins de " + (pageIndex + 1) + " pages.")
-                                .getBytes());
+                return badRequest("L'index de page doit être inférieur au nombre de pages du PDF.");
             }
+            tempFiles.addAll(List.of(pdFiles));
 
             // Create a ZIP file containing the divided PDFs
             File zipfile = File.createTempFile("files_", ".zip");
+            tempFiles.add(zipfile);
             try (FileOutputStream fos = new FileOutputStream(zipfile);
                     ZipOutputStream zos = new ZipOutputStream(fos)) {
 
                 // Add each PDF file to the ZIP
-                for (File pdf : pdFiles) {
-                    ZipEntry zipEntry = new ZipEntry(pdf.getName());
-                    zos.putNextEntry(zipEntry);
-                    byte[] bytes = Files.readAllBytes(pdf.toPath());
-                    zos.write(bytes);
+                for (int i = 0; i < pdFiles.length; i++) {
+                    zos.putNextEntry(new ZipEntry("part" + (i + 1) + ".pdf"));
+                    Files.copy(pdFiles[i].toPath(), zos);
                     zos.closeEntry();
                 }
             }
 
-            byte[] zipBytes = Files.readAllBytes(zipfile.toPath());
-            System.out.println(zipfile.getName());
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=files.zip")
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(zipBytes);
+            ResponseEntity<StreamingResponseBody> response = streamFile(zipfile, "files.zip", MediaType.APPLICATION_OCTET_STREAM);
+            tempFiles.remove(zipfile); // c'est streamFile qui le supprime après l'envoi
+            return response;
 
         } catch (Exception e) {
-            System.out.println("ici2");
             e.printStackTrace();
-            return ResponseEntity.status(500).body(null);
+            return ResponseEntity.status(500).build();
+        } finally {
+            deleteQuietly(tempFiles.toArray(new File[0]));
         }
 
     }
 
     @PostMapping("/merge")
-    public ResponseEntity<FileSystemResource> mergePDF(
+    public ResponseEntity<StreamingResponseBody> mergePDF(
             @RequestParam("files") MultipartFile files[]) {
         if (files.length < 2) {
-            return ResponseEntity.badRequest()
-                    .body(null);
-
+            return badRequest("Il faut au moins deux fichiers à fusionner.");
         }
 
-        File[] convFiles = new File[files.length];
-        for (int i = 0; i < files.length; i++) {
-            try {
+        List<File> tempFiles = new ArrayList<>();
+        try {
+            File[] convFiles = new File[files.length];
+            for (int i = 0; i < files.length; i++) {
                 File convFile = File.createTempFile("upload_", ".pdf");
+                tempFiles.add(convFile);
                 files[i].transferTo(convFile);
                 convFiles[i] = convFile; // ajouter au tableau
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
-        }
-        File pdFile = PDFileManagerMethode.mergePdf(convFiles);
+            File pdFile = PDFileManagerMethode.mergePdf(convFiles);
+            tempFiles.add(pdFile);
 
-        FileSystemResource resource = new FileSystemResource(pdFile);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + pdFile.getName())
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(resource);
+            ResponseEntity<StreamingResponseBody> response = streamFile(pdFile, "merged.pdf", MediaType.APPLICATION_PDF);
+            tempFiles.remove(pdFile); // c'est streamFile qui le supprime après l'envoi
+            return response;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            deleteQuietly(tempFiles.toArray(new File[0]));
+        }
     }
 
     @PostMapping("/compressZip")
-    public ResponseEntity<FileSystemResource> compressZip(
+    public ResponseEntity<StreamingResponseBody> compressZip(
             @RequestParam("file") MultipartFile file) {
+        File convFile = null;
+        File zipFile = null;
         try {
-            File convFile = File.createTempFile("upload_", ".pdf");
+            convFile = File.createTempFile("upload_", ".pdf");
             file.transferTo(convFile);
-            File zipFile = PDFileManagerMethode.compressPdfToZip(convFile);
+            zipFile = PDFileManagerMethode.compressPdfToZip(convFile);
 
-            FileSystemResource resource = new FileSystemResource(zipFile);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFile.getName())
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(resource);
+            ResponseEntity<StreamingResponseBody> response = streamFile(zipFile, "compressed.zip", MediaType.APPLICATION_OCTET_STREAM);
+            zipFile = null; // c'est streamFile qui le supprime après l'envoi
+            return response;
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            deleteQuietly(convFile, zipFile);
         }
     }
 
     @PostMapping("/compressPdf")
-    public ResponseEntity<FileSystemResource> compressPDF(
+    public ResponseEntity<StreamingResponseBody> compressPDF(
             @RequestParam("file") MultipartFile file) {
+        File convFile = null;
+        File pdFile = null;
         try {
-            File convFile = File.createTempFile("upload_", ".pdf");
+            convFile = File.createTempFile("upload_", ".pdf");
             file.transferTo(convFile);
-            File pdFile = PDFileManagerMethode.compressPdf(convFile);
+            pdFile = PDFileManagerMethode.compressPdf(convFile);
 
-            FileSystemResource resource = new FileSystemResource(pdFile);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + pdFile.getName())
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .body(resource);
+            ResponseEntity<StreamingResponseBody> response = streamFile(pdFile, "compressed.pdf", MediaType.APPLICATION_PDF);
+            pdFile = null; // c'est streamFile qui le supprime après l'envoi
+            return response;
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            deleteQuietly(convFile, pdFile);
         }
     }
 
     @PostMapping("/security")
-    public ResponseEntity<FileSystemResource> passwordPDF(
+    public ResponseEntity<StreamingResponseBody> passwordPDF(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "password" , defaultValue = "") String password,
             @RequestParam(value = "canPrint", defaultValue = "true") boolean canPrint,
             @RequestParam(value = "canModify", defaultValue = "true") boolean canModify,
             @RequestParam(value = "canCopy", defaultValue = "true") boolean canCopy) {
 
-        try {
-            File convFile = File.createTempFile("upload_", ".pdf");
-            file.transferTo(convFile);
-            File pdFile = PDFileManagerMethode.securityPdf(convFile, password, canPrint, canModify, canCopy);
-
-            FileSystemResource resource = new FileSystemResource(pdFile);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + pdFile.getName())
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .body(resource);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (password.isBlank()) {
+            return badRequest("Le mot de passe ne peut pas être vide.");
         }
 
+        File convFile = null;
+        File pdFile = null;
+        try {
+            convFile = File.createTempFile("upload_", ".pdf");
+            file.transferTo(convFile);
+            pdFile = PDFileManagerMethode.securityPdf(convFile, password, canPrint, canModify, canCopy);
+
+            ResponseEntity<StreamingResponseBody> response = streamFile(pdFile, "secured.pdf", MediaType.APPLICATION_PDF);
+            pdFile = null; // c'est streamFile qui le supprime après l'envoi
+            return response;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            deleteQuietly(convFile, pdFile);
+        }
+
+    }
+
+    /*
+     * Envoie le fichier morceau par morceau, puis le supprime.
+     * Attention, le lambda ne tourne pas ici : Spring le lance plus tard, sur un autre thread, pour écrire la réponse.
+     * Files.copy est bloquant, donc le finally du lambda passe seulement une fois tout le fichier envoyé
+     * (ou si l'envoi plante, par exemple quand l'utilisateur ferme l'onglet).
+     */
+    private static ResponseEntity<StreamingResponseBody> streamFile(File file, String fileName, MediaType type) {
+        StreamingResponseBody body = outputStream -> {
+            try {
+                Files.copy(file.toPath(), outputStream);
+            } finally {
+                deleteQuietly(file);
+            }
+        };
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
+                .contentType(type)
+                .contentLength(file.length())
+                .body(body);
+    }
+
+    private static ResponseEntity<StreamingResponseBody> badRequest(String message) {
+        byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+        StreamingResponseBody body = outputStream -> outputStream.write(bytes);
+
+        return ResponseEntity.badRequest()
+                .contentType(new MediaType("text", "plain", StandardCharsets.UTF_8))
+                .body(body);
+    }
+
+    private static void deleteQuietly(File... files) {
+        for (File f : files) {
+            if (f == null) continue;
+            try {
+                Files.deleteIfExists(f.toPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }
